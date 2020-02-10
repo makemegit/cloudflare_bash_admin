@@ -135,7 +135,7 @@ _EOF_
           sleep $DELAY
           continue
         else
-          echo -e "Changing record to" $Red$dnsrecord$NC
+          echo -e "Changing record for" $Blue$dnsrecord$NC "to" $Red$ip$NC
           zoneid=$(zoneid)
           dnsrecordid=$(dnsrecordid)
           changednsrecord
