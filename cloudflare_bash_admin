@@ -1,6 +1,6 @@
 #!/bin/bash
 ## Bash script for managing domains on CloudFlare (api v4)
-## by @makeme
+## by @makeme v.2020-02-10
 #
 ## Variables:
 #
