@@ -10,7 +10,7 @@ zone=domain.com         # Main Domain                              #
 # dnsrecord is the record which will be updated (no need to enter) #
 dnsrecord=www.domain.com                                           #
 # Cloudflare authentication details. *Keep these private !!!       #
-cloudflare_auth_email=email1111@gmail.com                      #!!!#
+cloudflare_auth_email=emailFAKE@gmail.com                      #!!!#
 cloudflare_auth_key=e07910a06a086c83bFAKE27aa00b26ed11126ed    #!!!#
 #------------------------------------------------------------------#
 #
