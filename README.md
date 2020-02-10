@@ -30,3 +30,10 @@ Enter the domain name (q for back)>
 
 2. List and change DNS Records
 
+domain.com A 123.123.123.123
+www.domain.com A 123.123.123.123
+-----------------------------------------------------------------------------------------------------------------------------
+Enter the subdomain name (q for back)> www.domain.com A 222.222.222.222
+Changing record for www.domain.com to 222.222.222.222
+true
+....
