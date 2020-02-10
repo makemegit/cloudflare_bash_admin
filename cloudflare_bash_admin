@@ -1,0 +1,168 @@
+#!/bin/bash
+## Bash script for managing domains on CloudFlare (api v4)
+## by @makeme
+#
+## Variables:
+#
+#------------------------------------------------------------------#
+# Cloudflare zone is the zone which holds the record               #
+zone=domain.com         # Main Domain                              #
+# dnsrecord is the record which will be updated (no need to enter) #
+dnsrecord=www.domain.com                                           #
+# Cloudflare authentication details. *Keep these private !!!       #
+cloudflare_auth_email=email1111@gmail.com                      #!!!#
+cloudflare_auth_key=e07910a06a086c83bFAKE27aa00b26ed11126ed    #!!!#
+#------------------------------------------------------------------#
+#
+#
+#
+#
+# Get the zone id for the requested zone
+zoneid ()
+{
+  curl -s -X GET "https://api.cloudflare.com/client/v4/zones?name=$zone&status=active" \
+   -H "X-Auth-Email: $cloudflare_auth_email" \
+   -H "X-Auth-Key: $cloudflare_auth_key" \
+   -H "Content-Type: application/json" | jq -r '{"result"}[] | .[0] | .id'
+ }
+# Get the dns record id
+dnsrecordid ()
+{
+  curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$zoneid/dns_records?&name=$dnsrecord" \
+  -H "X-Auth-Email: $cloudflare_auth_email" \
+  -H "X-Auth-Key: $cloudflare_auth_key" \
+  -H "Content-Type: application/json" | jq -r '{"result"}[] | .[0] | .id'
+}
+# Colors
+Red='\033[0;31m'        # Red
+Blue='\033[0;34m'       # Blue
+NC='\033[0m'            # Text Reset (No Color)
+# Other Variables
+DELAY="0.1" # Number of seconds to display results
+SEPARATOR="----"
+
+## Functions
+
+# Get Domains
+getzones ()
+{
+  curl -s -X GET "https://api.cloudflare.com/client/v4/zones?status=active" \
+  -H "X-Auth-Email: $cloudflare_auth_email" \
+  -H "X-Auth-Key: $cloudflare_auth_key" \
+  -H "Content-Type: application/json" \
+  | jq -r '{"result"}[] | .[] | .name + " " + .content';
+}
+# Get DNS Zone Records. domain and record
+getrecords ()
+{
+  curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$zoneid/dns_records?&page=1&per_page=20&order=type&direction=desc&match=all" \
+   -H "X-Auth-Email: $cloudflare_auth_email" \
+   -H "X-Auth-Key: $cloudflare_auth_key" \
+   -H "Content-Type: application/json" \
+   | jq -r '{"result"}[] | .[] | .name + " " + .type + " " + .content'
+}
+
+changednsrecord ()
+{
+  curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/$zoneid/dns_records/$dnsrecordid" \
+    -H "X-Auth-Email: $cloudflare_auth_email" \
+    -H "X-Auth-Key: $cloudflare_auth_key" \
+    -H "Content-Type: application/json" \
+    --data "{\"type\":\"$typerec\",\"name\":\"$dnsrecord\",\"content\":\"$ip\",\"ttl\":1,\"proxied\":false}" \
+    | jq '.success' | cut -d'"' -f 2
+}
+
+# Screen separator (blue)
+wholescreenline ()
+{
+  printf $Blue
+  printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
+  printf $NC
+}
+
+## Menu
+while true; do
+  cat << _EOF_
+
+Please Select for $(echo -e $Red$zone$NC) :
+
+1. List and select another Domain name
+2. List and change DNS Records
+3. Create new DNS Record (Not DONE)
+4. Add new Domain (Not Done)
+0. Quit
+
+_EOF_
+
+  read -e -p "Enter selection [0-4] > "
+
+  if [[ $REPLY =~ ^[0-3]$ ]]; then
+    case $REPLY in
+      1)
+        wholescreenline
+        echo "Domains in your Cloudflare account:"
+        echo " "
+        zoneid=$(zoneid)
+        getzones
+        echo " "
+        read -e -p "Enter the domain name ("q" for back)> " zone1
+        if [[ "$zone1" == "q" ]]; then
+          echo " "
+          wholescreenline
+          sleep $DELAY
+          continue
+        else
+          zone=$zone1
+          zoneid=$(zoneid)
+          echo -e "Now you are managing " $Red$zone$NC
+          echo " "
+          wholescreenline
+          sleep $DELAY
+          continue
+          fi
+        ;;
+      2)
+        echo -e $SEPARATOR "DNS Zone Rcords for" $Red$zone $dnsrecord$NC " " $SEPARATOR
+        wholescreenline
+        getrecords
+        wholescreenline
+        read -e -p "Enter the subdomain name ("q" for back)> " dnsrecord typerec ip
+        if [[ "$dnsrecord" == "q" ]]; then
+          echo " "
+          wholescreenline
+          sleep $DELAY
+          continue
+        else
+          echo -e "Changing record to" $Red$dnsrecord$NC
+          zoneid=$(zoneid)
+          dnsrecordid=$(dnsrecordid)
+          changednsrecord
+          sleep $DELAY
+          wholescreenline
+          continue
+        fi
+        ;;
+      3)
+        wholescreenline
+        getzones
+        wholescreenline
+        sleep $DELAY
+        continue
+        ;;
+      4)
+        wholescreenline
+        getzones
+        wholescreenline
+        sleep $DELAY
+        continue
+        ;;
+      0)
+        break
+        ;;
+    esac
+  else
+    echo -e $Red"Invalid entry."$NC
+    sleep $DELAY
+  fi
+done
+echo "Goodbye :)"
