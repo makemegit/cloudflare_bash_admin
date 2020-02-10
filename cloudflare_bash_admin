@@ -124,6 +124,8 @@ _EOF_
       2)
         echo -e $SEPARATOR "DNS Zone Rcords for" $Red$zone $dnsrecord$NC " " $SEPARATOR
         wholescreenline
+        zoneid=$(zoneid)
+        dnsrecordid=$(dnsrecordid)
         getrecords
         wholescreenline
         read -e -p "Enter the subdomain name ("q" for back)> " dnsrecord typerec ip
