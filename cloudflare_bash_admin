@@ -122,7 +122,7 @@ _EOF_
           fi
         ;;
       2)
-        echo -e $SEPARATOR "DNS Zone Rcords for" $Red$zone $dnsrecord$NC " " $SEPARATOR
+        echo -e "Please Select for " $Red$zone$NC :
         wholescreenline
         zoneid=$(zoneid)
         dnsrecordid=$(dnsrecordid)
